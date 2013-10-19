@@ -11,7 +11,7 @@
         padding: 0;
     }
     .J_SwsContainer {
-        margin: 0 auto;
+        margin: 50px auto 0;
         width: 98%;
     }
     .J_Swser {
@@ -20,19 +20,40 @@
         border-radius: 5px;
         text-align: center;
         font-size: 48px;
+        overflow: hidden;
         -webkit-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
         -moz-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
         -o-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
         -ms-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
         transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
     }
-
     .J_Swser:hover {
         box-shadow: 3px 3px 5px #A7AC4B;
     }
+    .J_Filler {
+        border-radius: 4px;
+    }
+    /* 设置表单样式 */
+    .set-form {position: fixed;left: 0;top: 0;z-index: 10;padding: 10px;width: 100%;background-color: #fff;}
+    .number {width: 50px;}
     </style>
 </head>
 <body>
+<div class="set-form">
+    最小列宽：<input type="text" id="J_ColWidth" value="100" class="number">
+    &nbsp;&nbsp;
+    列宽类型：<input type="text" id="J_RowSize" value="4" class="number">
+    &nbsp;&nbsp;
+    间距：<input type="text" id="J_Space" value="10" class="number">
+    &nbsp;&nbsp;
+    行高：<input type="text" id="J_RowHeight" value="" title="填写后定高，不填则随机50-400" placeholder="填写后定高，不填则随机50-400">
+    &nbsp;&nbsp;
+    个数：<input type="text" id="J_Count" value="15" class="number">
+    &nbsp;&nbsp;
+    <input type="button" id="J_ReRender" value="应 用">
+    &nbsp;&nbsp;
+    <input type="button" id="J_AddFive" value="添加5个">
+</div>
 <div class="J_SwsContainer">
     
 </div>
@@ -61,25 +82,41 @@
     }
 
     var node = S.one('<div class="J_Swser">');
-    var colWidth = 100;
-    var space = 10;
+    var colWidth = S.one("#J_ColWidth").val();
+    var type = S.one("#J_RowSize").val();
+    var space = S.one("#J_Space").val();
+    var count = S.one("#J_Count").val();
+    var rowHeight = S.one("#J_RowHeight").val();
     var body = S.one(".J_SwsContainer");
 
-    for (var i = 0; i < 50; i++) {
-        var n = node.clone();
-        n.css("backgroundColor", getColor());
-        var col = Math.round(Math.random() * 3) + 1;
-        var row = Math.round(Math.random() * 6) + 1;
-        // var height = row * 50 + (row - 1) * space;
-        var height = Math.round(Math.random() * 400) + 50;
-        n.css("width", col * colWidth + (col - 1) * space);
-        n.css("height", height);
-        n.css("lineHeight", height + "px"); // demo使用
-        n.html(i);
-        body.append(n);
+    function addItem(tpl, cw, type, sp, num, rh) {
+        var nodes = [];
+        for (var i = 0; i < num; i++) {
+            var n = tpl.clone();
+            n.css("backgroundColor", getColor());
+            var col = Math.round(Math.random() * (type - 1)) + 1;
+            // var row = Math.round(Math.random() * 6) + 1;
+            var width = col * cw + (col - 1) * sp;
+            // var height = row * 50 + (row - 1) * space;
+            var height = Math.round(Math.random() * 350) + 50;
+            if (rh) {
+                height = rh;
+            }
+            // var height = 200;
+            n.css("width", width);
+            n.css("height", height);
+            n.css("lineHeight", height + "px"); // demo使用
+            n.html("ABCDEFGHIJKLMNOPQRSTUVWXYZ".substr(Math.round(Math.random() * 22), Math.round(Math.random() * 3) + 1));
+            nodes.push(n);
+        }
+        return nodes;
     }
+    var items = addItem(node, colWidth, type, space, count);
+    S.each(items, function(item, i){
+        body.append(item);
+    });
 
-    var swsers = body.all(".J_Swser");
+    // var swsers = body.all(".J_Swser");
 
     // new Masonry(S.one(".J_SwsContainer")[0], {
     //     columnWidth: 100,
@@ -90,13 +127,58 @@
     S.use('gallery/sws/1.0/index', function (S, Sws) {
         var sws = new Sws({
             container: ".J_SwsContainer",
-            swsers: swsers,
+            swsers: ".J_Swser",
             colWidth: 100,
             space: 10,
             offsetX: 10,
-            offsetY: 10//,
-            //enableFill: true,
-            //fillColor: "#666"
+            offsetY: 10,
+            enableFill: true,
+            fillColor: "#666"
+        });
+
+        S.one("#J_AddFive").on("click", function(){
+            var ais = addItem(node, colWidth, type, space, 5, rowHeight);
+            sws.addItems(ais);
+        });
+
+        S.one("#J_ReRender").on("click", function(){
+            colWidth = S.one("#J_ColWidth").val();
+            type = S.one("#J_RowSize").val();
+            space = S.one("#J_Space").val();
+            rowHeight = S.one("#J_RowHeight").val();
+            count = S.one("#J_Count").val();
+
+            colWidth = parseInt(colWidth) < 100 ? 100 : parseInt(colWidth) > 500 ? 500 : parseInt(colWidth);
+            type = parseInt(type) < 1 ? 1 : parseInt(type) > 5 ? 5 : parseInt(type);
+            space = parseInt(space) < 0 ? 0 : parseInt(space) > 50 ? 50 : parseInt(space);
+            count = parseInt(count) < 10 ? 10 : parseInt(count) > 50 ? 50 : parseInt(count);
+
+            body.html("");
+            items = addItem(node, colWidth, type, space, count, rowHeight);
+            S.each(items, function(item, i){
+                body.append(item);
+            });
+            // swsers = body.all(".J_Swser");
+
+            sws = new Sws({
+                container: ".J_SwsContainer",
+                swsers: ".J_Swser",
+                colWidth: colWidth,
+                space: space,
+                offsetX: 10,
+                offsetY: 10,
+                enableFill: true,
+                fillColor: "#666"
+            });
+
+        });
+
+        var timer = null;
+        S.one(window).on("resize", function(){
+            clearTimeout(timer);
+            timer = setTimeout(function(){
+                sws.reposition();
+            }, 200);
         });
     })
 </script>

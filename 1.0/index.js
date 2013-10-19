@@ -18,8 +18,9 @@ KISSY.add(function (S, Node,Base) {
         }
         //调用父类构造函数
         Sws.superclass.constructor.call(self, cfg);
+        self.config = cfg;
         self.set("container", S.one(cfg.container));
-        self.set("swsers", cfg.swsers);
+        self.set("swsers", self.get("container").all(cfg.swsers));
         self.set("colWidth", cfg.colWidth || 100);
         self.set("space", cfg.space || 10);
         self.set("offset", {x: (cfg.offsetX || 10), y: (cfg.offsetY || 10)});
@@ -50,6 +51,7 @@ KISSY.add(function (S, Node,Base) {
             var space = self.get("space");
             var offset = self.get("offset");
             var ba = self.get("blankArea");
+            ba.splice(0, ba.length);
             swsers.each(function(s, i){
                 var width = s.width();
                 var height = s.height();
@@ -83,12 +85,77 @@ KISSY.add(function (S, Node,Base) {
             if (self.get("enableFill")) {
                 self.fillWithDiv();
             }
+            self.setContainerHeight();
         },
         getRandomColor: function() {
             var ffffff = 16777215;
             var color = Math.round(Math.random() * ffffff);
             color = color.toString(16);
             return "#" + ("00000" + color).slice(-6);
+        },
+        addItems: function(items) {
+            var self = this;
+            var cont = self.get("container");
+            var items = S.clone(items);
+            var colWidth = self.get("colWidth");
+            var contWidth = cont.width();
+            var space = self.get("space");
+            var offset = self.get("offset");
+            var ba = self.get("blankArea");
+            S.each(items, function(node, i){
+                node = S.one(node);
+                cont.append(node);
+                var width = node.width();
+                var height = node.height();
+                var blen = ba.length;
+                var iFlag = false;
+                if (blen > 0) {
+                    iFlag = self.insertBlankArea(node);
+                }
+                if (!iFlag) {
+                    var colArr = self.get("colArr");
+                    var min = self.getMinCol(colArr);
+                    var colCross = (width + space) / (colWidth + space);
+                    var ost = 1;
+                    while (min * (colWidth + space) + width + offset.x > contWidth) {
+                        min = self.getMinCol(colArr, ost++);
+                    }
+                    var col = min;
+                    if (self.hasCross(min, colCross)) {
+                        col = self.getMaxCol(colArr, min, colCross);
+                    }
+                    var left = min * (colWidth + space) + offset.x;
+                    var top = colArr[col].height;
+                    node.css({left: left, top: top});
+                    self.addBlankArea(min, colCross, top);
+                    for (var c = min, ls = min + colCross; c < ls; c++) {
+                        colArr[c].height = top + height + space;
+                    }
+                }
+            });
+            if (self.get("enableFill")) {
+                self.fillWithDiv();
+            }
+            self.setContainerHeight();
+            self.set("swsers", cont.all(self.config.swsers));
+
+        },
+        setContainerHeight: function() {
+            var self = this;
+            var colArr = self.get("colArr");
+            var cont = self.get("container");
+            var maxHeight = self.getMaxHeight(colArr);
+            cont.css("height", maxHeight);
+        },
+        getMaxHeight: function(arr) {
+            var self = this;
+            var max = arr[0].height, mlen = arr.length;
+            for (var m = 0; m < mlen; m++) {
+                if (max < arr[m].height) {
+                    max = arr[m].height;
+                }
+            }
+            return max;
         },
         addBlankArea: function(from, step, limit) {
             var self = this;
@@ -110,7 +177,7 @@ KISSY.add(function (S, Node,Base) {
                         left: col * (colWidth + space) + offset.x,
                         top: colArr[col].height,
                         width: width,
-                        height: limit - colArr[col].height
+                        height: limit - colArr[col].height - space
                     });
                 }
             }
@@ -140,15 +207,14 @@ KISSY.add(function (S, Node,Base) {
             S.each(ba, function(b, a){
                 if (b.height > 10) {
                     var fn = filler.clone();
+                    cont.append(fn);
                     fn.css({
                         left: b.left,
                         top: b.top,
                         width: b.width,
                         height: b.height,
-                        backgroundColor: (color || self.getRandomColor()),
-                        borderRadius: "4px"
+                        backgroundColor: (color || self.getRandomColor())
                     });
-                    cont.append(fn);
                 }
             });
         },
