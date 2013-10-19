@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Super Waterfall Stream</title>
+    <script src="http://a.tbcdn.cn/s/kissy/1.3.0/kissy-min.js" charset="utf-8"></script>
+    <script src="../masonry.pkgd.js"></script>
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .J_SwsContainer {
+        margin: 0 auto;
+        width: 98%;
+    }
+    .J_Swser {
+        position: absolute;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 48px;
+        -webkit-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+        -moz-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+        -o-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+        -ms-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+        transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+    }
+
+    .J_Swser:hover {
+        box-shadow: 3px 3px 5px #A7AC4B;
+    }
+    </style>
+</head>
+<body>
+<div class="J_SwsContainer">
+    
+</div>
+<script>
+    var S = KISSY;
+    S.Config.debug = true;
+    if (S.Config.debug) {
+        var srcPath = "../../../";
+        S.config({
+            packages:[
+                {
+                    name:"gallery",
+                    path:srcPath,
+                    charset:"utf-8",
+                    ignorePackageNameInUri:true
+                }
+            ]
+        });
+    }
+
+    function getColor() {
+        var ffffff = 16777215;
+        var color = Math.round(Math.random() * ffffff);
+        color = color.toString(16);
+        return "#" + ("00000" + color).slice(-6);
+    }
+
+    var node = S.one('<div class="J_Swser">');
+    var colWidth = 100;
+    var space = 10;
+    var body = S.one(".J_SwsContainer");
+
+    for (var i = 0; i < 50; i++) {
+        var n = node.clone();
+        n.css("backgroundColor", getColor());
+        var col = Math.round(Math.random() * 3) + 1;
+        var row = Math.round(Math.random() * 6) + 1;
+        // var height = row * 50 + (row - 1) * space;
+        var height = Math.round(Math.random() * 500) + 50;
+        n.css("width", col * colWidth + (col - 1) * space);
+        n.css("height", height);
+        n.css("lineHeight", height + "px"); // demo使用
+        n.html(i);
+        body.append(n);
+    }
+
+    var swsers = body.all(".J_Swser");
+
+    new Masonry(S.one(".J_SwsContainer")[0], {
+        columnWidth: 100,
+        itemSelector: ".J_Swser",
+        gutter: 10
+    });
+
+    // S.use('gallery/sws/1.0/index', function (S, Sws) {
+    //     var sws = new Sws({
+    //         container: ".J_SwsContainer",
+    //         swsers: swsers,
+    //         colWidth: 100,
+    //         space: 10,
+    //         offsetX: 10,
+    //         offsetY: 10//,
+    //         //enableFill: true,
+    //         //fillColor: "#666"
+    //     });
+    // })
+</script>
+</body>
+</html>
