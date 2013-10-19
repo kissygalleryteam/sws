@@ -71,7 +71,7 @@
         var col = Math.round(Math.random() * 3) + 1;
         var row = Math.round(Math.random() * 6) + 1;
         // var height = row * 50 + (row - 1) * space;
-        var height = Math.round(Math.random() * 500) + 50;
+        var height = Math.round(Math.random() * 400) + 50;
         n.css("width", col * colWidth + (col - 1) * space);
         n.css("height", height);
         n.css("lineHeight", height + "px"); // demo使用
@@ -81,24 +81,24 @@
 
     var swsers = body.all(".J_Swser");
 
-    new Masonry(S.one(".J_SwsContainer")[0], {
-        columnWidth: 100,
-        itemSelector: ".J_Swser",
-        gutter: 10
-    });
+    // new Masonry(S.one(".J_SwsContainer")[0], {
+    //     columnWidth: 100,
+    //     itemSelector: ".J_Swser",
+    //     gutter: 10
+    // });
 
-    // S.use('gallery/sws/1.0/index', function (S, Sws) {
-    //     var sws = new Sws({
-    //         container: ".J_SwsContainer",
-    //         swsers: swsers,
-    //         colWidth: 100,
-    //         space: 10,
-    //         offsetX: 10,
-    //         offsetY: 10//,
-    //         //enableFill: true,
-    //         //fillColor: "#666"
-    //     });
-    // })
+    S.use('gallery/sws/1.0/index', function (S, Sws) {
+        var sws = new Sws({
+            container: ".J_SwsContainer",
+            swsers: swsers,
+            colWidth: 100,
+            space: 10,
+            offsetX: 10,
+            offsetY: 10//,
+            //enableFill: true,
+            //fillColor: "#666"
+        });
+    })
 </script>
 </body>
 </html>

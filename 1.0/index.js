@@ -50,7 +50,6 @@ KISSY.add(function (S, Node,Base) {
             var space = self.get("space");
             var offset = self.get("offset");
             var ba = self.get("blankArea");
-            var cols = self.get("cols");
             swsers.each(function(s, i){
                 var width = s.width();
                 var height = s.height();
@@ -64,40 +63,19 @@ KISSY.add(function (S, Node,Base) {
                     var min = self.getMinCol(colArr);
                     var colCross = (width + space) / (colWidth + space);
                     var ost = 1;
-                    while (self.hasCross(min, colCross) || min * (colWidth + space) + width + offset.x > contWidth) {
+                    while (min * (colWidth + space) + width + offset.x > contWidth) {
                         min = self.getMinCol(colArr, ost++);
                     }
+                    var col = min;
+                    if (self.hasCross(min, colCross)) {
+                        col = self.getMaxCol(colArr, min, colCross);
+                    }
                     var left = min * (colWidth + space) + offset.x;
-                    var top = colArr[min].height;
+                    var top = colArr[col].height;
                     s.css({left: left, top: top});
-                    for (var c = min, ls = min + colCross; c < ls;/* c++*/) {
-                        if (colArr[c].height !== top) {
-                            var width = colWidth;
-                            var n = 0;
-                            while(c + n < ls && colArr[c + n].height === colArr[c].height) {
-                                width = (n + 1) * (colWidth + space) - space;
-                                if (n >= ls) {
-                                    colArr[n].height = top;
-                                }
-                                n++;
-                            }
-                            ba.push({
-                                index: c,
-                                left: c * (colWidth + space) + offset.x,
-                                top: colArr[c].height,
-                                width: width,
-                                height: top - colArr[c].height - space
-                            });
-                            var an = n > 0 ? n - 1 : 0;
-                            while(an >= 0) {
-                                colArr[c + an].height = top + height + space;
-                                an--;
-                            }
-                            c += n;
-                        } else {
-                            colArr[c].height = top + height + space;
-                            c++;
-                        }
+                    self.addBlankArea(min, colCross, top);
+                    for (var c = min, ls = min + colCross; c < ls; c++) {
+                        colArr[c].height = top + height + space;
                     }
                 }
             });
@@ -111,6 +89,43 @@ KISSY.add(function (S, Node,Base) {
             var color = Math.round(Math.random() * ffffff);
             color = color.toString(16);
             return "#" + ("00000" + color).slice(-6);
+        },
+        addBlankArea: function(from, step, limit) {
+            var self = this;
+            var ba = self.get("blankArea");
+            var colWidth = self.get("colWidth");
+            var space = self.get("space");
+            var colArr = self.get("colArr");
+            var offset = self.get("offset");
+            for (var j = 0, k = from; j < step; j++) {
+                var col = j + k;
+                if (colArr[col].height < limit) {
+                    var width = colWidth;
+                    while ((j + 1 < step) && colArr[j + k].height === colArr[j + k + 1].height) {
+                        width += colWidth + space;
+                        j++;
+                    }
+                    j = j > 0 ? j-- : j;
+                    ba.push({
+                        left: col * (colWidth + space) + offset.x,
+                        top: colArr[col].height,
+                        width: width,
+                        height: limit - colArr[col].height
+                    });
+                }
+            }
+        },
+        getMaxCol: function(arr, min, cr) {
+            var self = this;
+            var colArr = S.clone(arr);
+            var mc = min, max = colArr[mc].height;
+            for (var y = min, yl = min + cr; y < yl; y++) {
+                if (max < colArr[y].height) {
+                    mc = y;
+                    max = colArr[mc].height;
+                }
+            }
+            return mc;
         },
         fillWithDiv: function() {
             var self = this;
@@ -149,10 +164,14 @@ KISSY.add(function (S, Node,Base) {
             for (var b = 0; b < blen; b++) {
                 if (baArr[b].width >= nWidth && baArr[b].height >= nHeight) {
                     node.css({left: baArr[b].left, top: baArr[b].top});
-                    // baArr[b].width -= nWidth;
                     var lWidth = baArr[b].width - nWidth - space;
                     if (lWidth !== 0) {
-                        ba.push({left: baArr[b].left + nWidth + space, top: baArr[b].top, width: lWidth, height: baArr[b].height});
+                        ba.push({
+                            left: baArr[b].left + nWidth + space,
+                            top: baArr[b].top,
+                            width: lWidth,
+                            height: baArr[b].height
+                        });
                     }
                     baArr[b].top += nHeight + space;
                     baArr[b].width = nWidth;

@@ -1,12 +1,12 @@
 {
     "name": "sws",
     "version": "1.0",
-    "desc": "请修改组件描述",
+    "desc": "超级瀑布流(Super Waterfall Stream)",
     "cover": "",
     "author": {
         "name": "Letao",
         "email": "mailzwj@126.com",
-        "page": "请修改作者个人首页"
+        "page": "http://www.seejs.com"
     },
     "type": "kissy-pie",
     "type-url": "http://abc.alibaba-inc.com/r/kissy-pie"
