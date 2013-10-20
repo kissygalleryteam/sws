@@ -27,6 +27,7 @@
 ## 参数
 
 | **名称** | **类型** | **功能** |
+|:---------------|:--------|:----------|
 | container | id/class/node | 布局外部盒子 |
 | swsers | class | 将被用于布局的块标识 |
 | colWidth | Number | 最小列的列宽 |
@@ -63,6 +64,109 @@
 
 	```
 	sws.fillWidthDiv();
+	```
+## 示例
+
+* 引入KISSY库：
+
+	```
+	<script src="http://a.tbcdn.cn/s/kissy/1.3.0/kissy-min.js"></script>
+	```
+
+* html结构
+
+	```
+	<div class="J_SwsContainer"></div>
+	```
+布局块元素由 `JavaScript` 写入：
+	
+	```
+	function getColor() {
+        var ffffff = 16777215;
+        var color = Math.round(Math.random() * ffffff);
+        color = color.toString(16);
+        return "#" + ("00000" + color).slice(-6);
+    }
+	var node = S.one('<div class="J_Swser">');
+	var body = S.one(".J_SwsContainer");
+	function addItem(tpl, cw, type, sp, num, rh) {
+        var nodes = [];
+        for (var i = 0; i < num; i++) {
+            var n = tpl.clone();
+            n.css("backgroundColor", getColor());
+            var col = Math.round(Math.random() * (type - 1)) + 1;
+            // var row = Math.round(Math.random() * 6) + 1;
+            var width = col * cw + (col - 1) * sp;
+            // var height = row * 50 + (row - 1) * space;
+            var height = Math.round(Math.random() * 350) + 50;
+            if (rh) {
+                height = rh;
+            }
+            // var height = 200;
+            n.css("width", width);
+            n.css("height", height);
+            n.css("lineHeight", height + "px"); // demo使用
+            n.html("ABCDEFGHIJKLMNOPQRSTUVWXYZ".substr(Math.round(Math.random() * 22), Math.round(Math.random() * 3) + 1));
+            nodes.push(n);
+        }
+        return nodes;
+    }
+    var items = addItem(node, 100, 4, 10, 20);
+    S.each(items, function(item, i){
+        body.append(item);
+    });
+	```
+* CSS样式：
+
+	```
+	.J_SwsContainer {
+        margin: 50px auto 0;
+        width: 98%;
+    }
+    .J_Swser {
+        position: absolute;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 48px;
+        overflow: hidden;
+        -webkit-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+        -moz-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+        -o-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+        -ms-transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+        transition: box-shadow 0.2s ease-out, left 0.3s ease-out, top 0.3s ease-out;
+    }
+    .J_Swser:hover {
+        box-shadow: 3px 3px 5px #A7AC4B;
+    }
+    .J_Filler {
+        border-radius: 4px;
+    }
+	```
+
+* JS初始化Sws组件：
+
+	```
+	S.use('gallery/sws/1.0/index', function (S, Sws) {
+        var sws = new Sws({
+            container: ".J_SwsContainer",
+            swsers: ".J_Swser",
+            colWidth: 100,
+            space: 10,
+            offsetX: 10,
+            offsetY: 10,
+            enableFill: true,
+            fillColor: "#666"
+        });
+		// 设置自适应
+		var timer = null;
+        S.one(window).on("resize", function(){
+            clearTimeout(timer);
+            timer = setTimeout(function(){
+                sws.reposition();
+            }, 200);
+        });
+	});
 	```
 
 ## 思考
